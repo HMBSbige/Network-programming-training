@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26730.16
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Network-programming-training", "Network-programming-training\Network-programming-training.csproj", "{2300DCA8-1210-4ED9-811D-D8564E629AA8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Training 00", "Network-programming-training\Training 00.csproj", "{2300DCA8-1210-4ED9-811D-D8564E629AA8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
