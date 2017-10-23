@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Threading;
 
 namespace Network_programming_training
 {
@@ -23,6 +24,14 @@ namespace Network_programming_training
 
         private void button1_Click(object sender, EventArgs e)
         {
+            Thread t1=new Thread(Execute1);
+            t1.Start();
+            Thread t2 = new Thread(Execute2);
+            t2.Start();
+        }
+
+        private void Execute1()
+        {
             if (checkBox1 != null && checkBox1.Checked)
             {
                 if (label1 != null)
@@ -31,11 +40,15 @@ namespace Network_programming_training
                     label1.Refresh();
                 }
                 textBox2?.Clear();
-                _writeToTextBox=WriteTextBox1;
+                _writeToTextBox = WriteTextBox1;
                 WriteText(_writeToTextBox);
                 if (label1 != null)
                     label1.Text = @"任务1完成";
             }
+        }
+
+        private void Execute2()
+        {
             if (checkBox2 != null && checkBox2.Checked)
             {
                 if (label2 != null)
@@ -50,6 +63,7 @@ namespace Network_programming_training
                     label2.Text = @"任务2完成";
             }
         }
+
         private void WriteText(WriteToTextBox writeMethod)
         {
             var textBox = this.textBox1;
@@ -59,6 +73,7 @@ namespace Network_programming_training
                 writeMethod?.Invoke(strData);
             }
         }
+
         private void WriteTextBox1(string strTxt)
         {
             var textBox = this.textBox2;
@@ -77,7 +92,8 @@ namespace Network_programming_training
         {
             //设置文本框获取焦点
             this.ActiveControl = this.textBox1;
-            //this.txt_Input.Focus();
+            //允许跨线程调用
+            CheckForIllegalCrossThreadCalls = false;
         }
     }
 }
