@@ -22,6 +22,16 @@ namespace Network_programming_training
 
         private WriteToTextBox _writeToTextBox;
 
+        //定义并声明回调
+        private delegate void WriteTxtJob1CallBack(string strValue);
+        WriteTxtJob1CallBack _writeTxtJobOneCallBack;
+        private delegate void WriteTxtJob2CallBack(string strValue);
+        WriteTxtJob2CallBack _writeTxtJobTwoCallBack;
+        private delegate void Label1CallBack(string strValue);
+        Label1CallBack _label1CallBack;
+        private delegate void Label2CallBack(string strValue);
+        Label2CallBack _label2CallBack;
+
         private void button1_Click(object sender, EventArgs e)
         {
             Thread t1=new Thread(Execute1);
@@ -34,16 +44,9 @@ namespace Network_programming_training
         {
             if (checkBox1 != null && checkBox1.Checked)
             {
-                if (label1 != null)
-                {
-                    label1.Text = @"运行中......";
-                    label1.Refresh();
-                }
-                textBox2?.Clear();
                 _writeToTextBox = WriteTextBox1;
-                WriteText(_writeToTextBox);
-                if (label1 != null)
-                    label1.Text = @"任务1完成";
+                WriteText(_writeToTextBox);              
+                label1?.Invoke(_label1CallBack, @"任务1完成");
             }
         }
 
@@ -51,41 +54,54 @@ namespace Network_programming_training
         {
             if (checkBox2 != null && checkBox2.Checked)
             {
-                if (label2 != null)
-                {
-                    label2.Text = @"运行中......";
-                    label2.Refresh();
-                }
-                textBox3?.Clear();
                 _writeToTextBox = WriteTextBox2;
                 WriteText(_writeToTextBox);
-                if (label2 != null)
-                    label2.Text = @"任务2完成";
+                label2?.Invoke(_label2CallBack, @"任务2完成");
             }
         }
 
         private void WriteText(WriteToTextBox writeMethod)
         {
-            var textBox = this.textBox1;
-            if (textBox != null)
+            if (this.textBox1 != null)
             {
-                string strData = textBox.Text;
-                writeMethod?.Invoke(strData);
+                writeMethod(textBox1.Text);
             }
         }
 
         private void WriteTextBox1(string strTxt)
         {
-            var textBox = this.textBox2;
-            if (textBox != null)
-                textBox.Text = strTxt;
+            textBox2?.Invoke(_writeTxtJobOneCallBack, strTxt);
         }
 
         private void WriteTextBox2(string strTxt)
         {
+            textBox3?.Invoke(_writeTxtJobTwoCallBack, strTxt);
+        }
+
+        private void Write1(string str)
+        {
+            var textBox = this.textBox2;
+            if (textBox != null)
+                textBox.Text = str;
+        }
+
+        private void Write2(string str)
+        {
             var textBox = this.textBox3;
             if (textBox != null)
-                textBox.Text = strTxt;
+                textBox.Text = str;
+        }
+
+        private void Showlabel1(string str)
+        {
+            if (label1 != null)
+                label1.Text = str;
+        }
+
+        private void Showlabel2(string str)
+        {
+            if (label2 != null)
+                label2.Text = str;
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -93,7 +109,12 @@ namespace Network_programming_training
             //设置文本框获取焦点
             this.ActiveControl = this.textBox1;
             //允许跨线程调用
-            CheckForIllegalCrossThreadCalls = false;
+            //CheckForIllegalCrossThreadCalls = false;
+            //实例化回调
+            _writeTxtJobOneCallBack = Write1;
+            _writeTxtJobTwoCallBack = Write2;
+            _label1CallBack = Showlabel1;
+            _label2CallBack = Showlabel2;
         }
     }
 }

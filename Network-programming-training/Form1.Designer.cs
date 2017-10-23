@@ -106,6 +106,7 @@
             this.groupBox2.Size = new System.Drawing.Size(261, 204);
             this.groupBox2.TabIndex = 0;
             this.groupBox2.TabStop = false;
+            this.groupBox2.Tag = "";
             this.groupBox2.Text = "groupBox2";
             // 
             // textBox2
