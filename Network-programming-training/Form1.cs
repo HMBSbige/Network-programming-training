@@ -64,7 +64,7 @@ namespace Network_programming_training
         {
             if (this.textBox1 != null)
             {
-                writeMethod(textBox1.Text);
+                writeMethod?.Invoke(textBox1.Text);
             }
         }
 
