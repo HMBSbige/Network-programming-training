@@ -212,24 +212,30 @@ namespace Server
         ///发送文件
         private void button4_Click(object sender, EventArgs e)
         {
-            List<byte> list = new List<byte>();
-            //获取要发送的文件的路径
-            string strPath = textBox3.Text.Trim();
-            using (FileStream sw = new FileStream(strPath, FileMode.Open, FileAccess.Read))
+            try
             {
-                byte[] buffer = new byte[2048];
-                sw.Read(buffer, 0, buffer.Length);
-                //移除末尾的 \0
-                string t=Encoding.UTF8.GetString(buffer).TrimEnd('\0');
-                buffer = Encoding.UTF8.GetBytes(t);
+                List<byte> list = new List<byte>();
+                //获取要发送的文件的路径
+                string strPath = textBox3.Text.Trim();
+                using (FileStream sw = new FileStream(strPath, FileMode.Open, FileAccess.Read))
+                {
+                    byte[] buffer = new byte[2048];
+                    sw.Read(buffer, 0, buffer.Length);
+                    //移除末尾的 \0
+                    string t = Encoding.UTF8.GetString(buffer).TrimEnd('\0');
+                    buffer = Encoding.UTF8.GetBytes(t);
 
-                list.Add(1);
-                list.AddRange(buffer);
-                
-                byte[] newBuffer = list.ToArray();
-                button4.Invoke(sendCallBack, newBuffer);
+                    list.Add(1);
+                    list.AddRange(buffer);
+
+                    byte[] newBuffer = list.ToArray();
+                    button4.Invoke(sendCallBack, newBuffer);
+                }
             }
-
+            catch
+            {
+                textBox4.Invoke(receiveCallBack, @"发送文件 "+ textBox3.Text+ @" 出错！");
+            }
         }
 
         private void SendFile(byte[] sendBuffer)
