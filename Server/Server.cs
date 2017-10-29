@@ -60,11 +60,11 @@ namespace Server
             }
             catch
             {
-                textBox4.AppendText(@"监听失败" + "\r\n");
+                textBox4.AppendText(@"监听失败" + Environment.NewLine);
                 button1.Enabled = true;
                 return;
             }
-            textBox4.AppendText(@"监听成功" + "\r\n");
+            textBox4.AppendText(@"监听成功" + Environment.NewLine);
             button2.Enabled = true;
             //开始监听:设置最大可以同时连接多少个请求
             socketListen.Listen(MAXClients);
@@ -106,38 +106,51 @@ namespace Server
         ///服务器端不停的接收客户端发送的消息
         private void Receive(object obj)
         {
-            Socket socketSend = obj as Socket;
-            while (true)
+            try
             {
-                //客户端连接成功后，服务器接收客户端发送的消息
-                byte[] buffer = new byte[2048];
-                //实际接收到的有效字节数
-                int count = socketSend.Receive(buffer);
-                if (count == 0)//count 表示客户端关闭，要退出循环
+                Socket _socketSend = obj as Socket;
+                while (true)
                 {
-                    break;
+                    //客户端连接成功后，服务器接收客户端发送的消息
+                    byte[] buffer = new byte[2048];
+                    //实际接收到的有效字节数
+                    int count = _socketSend.Receive(buffer);
+                    if (count == 0) //count 表示客户端关闭，要退出循环
+                    {
+                        break;
+                    }
+                    string str = Encoding.UTF8.GetString(buffer, 0, count);
+                    string strReceiveMsg =
+                        @"接收：" + _socketSend.RemoteEndPoint + @" 发送的消息: " + Environment.NewLine + str;
+                    textBox4.Invoke(receiveCallBack, strReceiveMsg);
                 }
-                string str = Encoding.UTF8.GetString(buffer, 0, count);
-                string strReceiveMsg = @"接收：" + socketSend.RemoteEndPoint + @" 发送的消息: " + str;
-                textBox4.Invoke(receiveCallBack, strReceiveMsg);
+            }
+            /*catch (SocketException)
+            {
+                
+            }*/
+            catch (Exception ex)
+            {
+                MessageBox.Show(@"连接服务端出错:" + ex, @"出错啦", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         ///回调委托需要执行的方法
         private void SetTextValue(string strValue)
         {
-            textBox4.AppendText(strValue + "\r\n");
+            textBox4.AppendText(strValue + Environment.NewLine);
         }
 
 
         private void ReceiveMsg(string strMsg)
         {
-            textBox4.AppendText(strMsg + "\r\n");
+            textBox4.AppendText(strMsg + Environment.NewLine);
         }
 
         private void AddCmbItem(string strItem)
         {
             comboBox1.Items.Add(strItem);
+            comboBox1.SelectedIndex = 0;
         }
 
         ///服务器给客户端发送消息
@@ -147,13 +160,12 @@ namespace Server
             {
                 string strMsg = textBox5.Text.Trim();
                 byte[] buffer = Encoding.UTF8.GetBytes(strMsg);
-                List<byte> list = new List<byte>();
-                list.Add(0);
+                List<byte> list = new List<byte> {0};
                 list.AddRange(buffer);
                 //将泛型集合转换为数组
                 byte[] newBuffer = list.ToArray();
                 //获得用户选择的IP地址
-                string ip = this.comboBox1.SelectedItem.ToString();
+                string ip = comboBox1.SelectedItem.ToString();
                 Clients[ip].Send(newBuffer);
             }
             catch (Exception ex)
@@ -180,14 +192,18 @@ namespace Server
         {
             List<byte> list = new List<byte>();
             //获取要发送的文件的路径
-            string strPath = this.textBox3.Text.Trim();
+            string strPath = textBox3.Text.Trim();
             using (FileStream sw = new FileStream(strPath, FileMode.Open, FileAccess.Read))
             {
                 byte[] buffer = new byte[2048];
-                int r = sw.Read(buffer, 0, buffer.Length);
+                sw.Read(buffer, 0, buffer.Length);
+                //移除末尾的 \0
+                string t=Encoding.UTF8.GetString(buffer).TrimEnd('\0');
+                buffer = Encoding.UTF8.GetBytes(t);
+
                 list.Add(1);
                 list.AddRange(buffer);
-
+                
                 byte[] newBuffer = list.ToArray();
                 button4.Invoke(sendCallBack, newBuffer);
             }
@@ -214,15 +230,9 @@ namespace Server
             socketSend?.Close();
             AcceptSocketThread?.Abort();
             threadReceive?.Abort();
-            textBox4.AppendText(@"停止监听" + "\r\n");
+            textBox4.AppendText(@"停止监听" + Environment.NewLine);
             button1.Enabled = true;
             button2.Enabled = false;
-        }
-
-        private void button6_Click(object sender, EventArgs e)
-        {
-            byte[] buffer = new byte[1] { 2 };
-            Clients[comboBox1.SelectedItem.ToString()].Send(buffer);
         }
     }
 }
