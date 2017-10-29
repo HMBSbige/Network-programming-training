@@ -27,7 +27,8 @@ namespace Browser
             toolStripContainer1.ContentPanel.Controls.Add(browser);
             browser.TitleChanged += OnBrowserTitleChanged;
             browser.AddressChanged += OnBrowserAddressChanged;
-         }
+            browser.LifeSpanHandler = new OpenPageSelf();
+        }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -92,6 +93,34 @@ namespace Browser
         private void Browser_Resize(object sender, EventArgs e)
         {
             ResizeURlTextBox();
+        }
+
+        private class OpenPageSelf : ILifeSpanHandler
+        {
+            public bool DoClose(IWebBrowser browserControl, IBrowser browser)
+            {
+                return false;
+            }
+
+            public void OnAfterCreated(IWebBrowser browserControl, IBrowser browser)
+            {
+
+            }
+
+            public void OnBeforeClose(IWebBrowser browserControl, IBrowser browser)
+            {
+
+            }
+
+            public bool OnBeforePopup(IWebBrowser browserControl, IBrowser browser, IFrame frame, string targetUrl,
+                string targetFrameName, WindowOpenDisposition targetDisposition, bool userGesture, IPopupFeatures popupFeatures,
+                IWindowInfo windowInfo, IBrowserSettings browserSettings, ref bool noJavascriptAccess, out IWebBrowser newBrowser)
+            {
+                newBrowser = null;
+                var chromiumWebBrowser = (ChromiumWebBrowser)browserControl;
+                chromiumWebBrowser.Load(targetUrl);
+                return true;
+            }
         }
     }
 }
