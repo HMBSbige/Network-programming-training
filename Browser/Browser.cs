@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Windows.Forms;
 using CefSharp; 
 using CefSharp.WinForms;
@@ -18,10 +17,6 @@ namespace Browser
         private AddItemCallBack urlBox;
 
         private ChromiumWebBrowser browser;
-
-        private List<string> History = new List<string>();
-
-        AutoCompleteStringCollection source = new AutoCompleteStringCollection();
 
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -61,7 +56,7 @@ namespace Browser
 
         private void toolStripButton3_Click(object sender, EventArgs e)
         {
-            LoadUrl(urlComboBox.Text);
+            urlComboBox.Items.Clear();
         }
 
         private void LoadUrl(string url)
@@ -80,7 +75,6 @@ namespace Browser
         private void OnBrowserAddressChanged(object sender, AddressChangedEventArgs args)
         {
             this.InvokeOnUiThreadIfRequired(() => urlComboBox.Text = args.Address);
-            History.Add(args.Address);
             toolStrip1.Invoke(urlBox, args.Address);
         }
 
@@ -127,18 +121,25 @@ namespace Browser
             }
         }
 
-        private void urlTextbox_KeyPress(object sender, KeyPressEventArgs e)
+        private void AddItem(string str)
         {
-            if (e.KeyChar == Convert.ToChar(13))
+            if (!urlComboBox.Items.Contains(str))
             {
-                LoadUrl(urlComboBox.Text);
-                e.Handled = true;
+                urlComboBox.Items.Add(str);
             }
         }
 
-        private void AddItem(string str)
+        private void urlComboBox_KeyUp(object sender, KeyEventArgs e)
         {
-            urlComboBox.Items.Add(str);
+            if (e.KeyCode != Keys.Enter)
+                return;
+            LoadUrl(urlComboBox.Text);
+            e.Handled = true;
+        }
+
+        private void urlComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            LoadUrl(urlComboBox.Text);
         }
     }
 }

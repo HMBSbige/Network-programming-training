@@ -49,8 +49,8 @@
             this.toolStripButton2,
             this.toolStripButton5,
             this.urlComboBox,
-            this.toolStripButton3,
-            this.toolStripButton4});
+            this.toolStripButton4,
+            this.toolStripButton3});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Size = new System.Drawing.Size(814, 25);
@@ -88,10 +88,13 @@
             // 
             // urlComboBox
             // 
+            this.urlComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.urlComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
             this.urlComboBox.AutoSize = false;
             this.urlComboBox.Name = "urlComboBox";
             this.urlComboBox.Size = new System.Drawing.Size(500, 25);
-            this.urlComboBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.urlTextbox_KeyPress);
+            this.urlComboBox.SelectedIndexChanged += new System.EventHandler(this.urlComboBox_SelectedIndexChanged);
+            this.urlComboBox.KeyUp += new System.Windows.Forms.KeyEventHandler(this.urlComboBox_KeyUp);
             // 
             // toolStripButton3
             // 
@@ -99,8 +102,8 @@
             this.toolStripButton3.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton3.Image")));
             this.toolStripButton3.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripButton3.Name = "toolStripButton3";
-            this.toolStripButton3.Size = new System.Drawing.Size(36, 22);
-            this.toolStripButton3.Text = "访问";
+            this.toolStripButton3.Size = new System.Drawing.Size(84, 22);
+            this.toolStripButton3.Text = "清空历史记录";
             this.toolStripButton3.Click += new System.EventHandler(this.toolStripButton3_Click);
             // 
             // toolStripButton4
