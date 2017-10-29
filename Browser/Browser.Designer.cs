@@ -33,7 +33,7 @@
             this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
             this.toolStripButton2 = new System.Windows.Forms.ToolStripButton();
             this.toolStripButton5 = new System.Windows.Forms.ToolStripButton();
-            this.urlTextbox = new System.Windows.Forms.ToolStripTextBox();
+            this.urlComboBox = new System.Windows.Forms.ToolStripComboBox();
             this.toolStripButton3 = new System.Windows.Forms.ToolStripButton();
             this.toolStripButton4 = new System.Windows.Forms.ToolStripButton();
             this.toolStripContainer1 = new System.Windows.Forms.ToolStripContainer();
@@ -48,7 +48,7 @@
             this.toolStripButton1,
             this.toolStripButton2,
             this.toolStripButton5,
-            this.urlTextbox,
+            this.urlComboBox,
             this.toolStripButton3,
             this.toolStripButton4});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
@@ -86,12 +86,12 @@
             this.toolStripButton5.Text = "主页";
             this.toolStripButton5.Click += new System.EventHandler(this.toolStripButton5_Click);
             // 
-            // urlTextbox
+            // urlComboBox
             // 
-            this.urlTextbox.AutoSize = false;
-            this.urlTextbox.Name = "urlTextbox";
-            this.urlTextbox.Size = new System.Drawing.Size(500, 25);
-            this.urlTextbox.KeyUp += new System.Windows.Forms.KeyEventHandler(this.urlTextbox_KeyUp);
+            this.urlComboBox.AutoSize = false;
+            this.urlComboBox.Name = "urlComboBox";
+            this.urlComboBox.Size = new System.Drawing.Size(500, 25);
+            this.urlComboBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.urlTextbox_KeyPress);
             // 
             // toolStripButton3
             // 
@@ -154,11 +154,11 @@
         private System.Windows.Forms.ToolStrip toolStrip1;
         private System.Windows.Forms.ToolStripButton toolStripButton1;
         private System.Windows.Forms.ToolStripButton toolStripButton2;
-        private System.Windows.Forms.ToolStripTextBox urlTextbox;
         private System.Windows.Forms.ToolStripButton toolStripButton3;
         private System.Windows.Forms.ToolStripButton toolStripButton4;
         private System.Windows.Forms.ToolStripContainer toolStripContainer1;
         private System.Windows.Forms.ToolStripButton toolStripButton5;
+        private System.Windows.Forms.ToolStripComboBox urlComboBox;
     }
 }
 

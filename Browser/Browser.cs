@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows.Forms;
 using CefSharp; 
 using CefSharp.WinForms;
@@ -13,11 +14,20 @@ namespace Browser
             InitializeComponent();
         }
 
+        private delegate void AddItemCallBack(string str);
+        private AddItemCallBack urlBox;
+
         private ChromiumWebBrowser browser;
+
+        private List<string> History = new List<string>();
+
+        AutoCompleteStringCollection source = new AutoCompleteStringCollection();
 
         private void Form1_Load(object sender, EventArgs e)
         {
             ResizeURlTextBox();
+            urlBox = AddItem;
+
             var settings = new CefSettings();
             Cef.Initialize(settings);
             browser = new ChromiumWebBrowser(@"ie.icoa.cn")
@@ -51,7 +61,7 @@ namespace Browser
 
         private void toolStripButton3_Click(object sender, EventArgs e)
         {
-            LoadUrl(urlTextbox.Text);
+            LoadUrl(urlComboBox.Text);
         }
 
         private void LoadUrl(string url)
@@ -62,14 +72,6 @@ namespace Browser
             }
         }
 
-        private void urlTextbox_KeyUp(object sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == Keys.Enter)
-            {
-                LoadUrl(urlTextbox.Text);
-            }
-        }
-
         private void OnBrowserTitleChanged(object sender, TitleChangedEventArgs args)
         {
             this.InvokeOnUiThreadIfRequired(() => Text = args.Title);
@@ -77,7 +79,9 @@ namespace Browser
 
         private void OnBrowserAddressChanged(object sender, AddressChangedEventArgs args)
         {
-            this.InvokeOnUiThreadIfRequired(() => urlTextbox.Text = args.Address);
+            this.InvokeOnUiThreadIfRequired(() => urlComboBox.Text = args.Address);
+            History.Add(args.Address);
+            toolStrip1.Invoke(urlBox, args.Address);
         }
 
         private void toolStripButton5_Click(object sender, EventArgs e)
@@ -87,7 +91,7 @@ namespace Browser
 
         private void ResizeURlTextBox()
         {
-            urlTextbox.Width = toolStrip1.Width - toolStripButton1.Width - toolStripButton2.Width - toolStripButton3.Width - toolStripButton4.Width - toolStripButton5.Width- toolStripButton5.Width;
+            urlComboBox.Width = toolStrip1.Width - toolStripButton1.Width - toolStripButton2.Width - toolStripButton3.Width - toolStripButton4.Width - toolStripButton5.Width- toolStripButton5.Width;
         }
 
         private void Browser_Resize(object sender, EventArgs e)
@@ -121,6 +125,20 @@ namespace Browser
                 chromiumWebBrowser.Load(targetUrl);
                 return true;
             }
+        }
+
+        private void urlTextbox_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == Convert.ToChar(13))
+            {
+                LoadUrl(urlComboBox.Text);
+                e.Handled = true;
+            }
+        }
+
+        private void AddItem(string str)
+        {
+            urlComboBox.Items.Add(str);
         }
     }
 }
