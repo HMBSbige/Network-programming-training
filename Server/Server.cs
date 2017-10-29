@@ -15,26 +15,31 @@ namespace Server
         {
             InitializeComponent();
         }
-        //定义回调:解决跨线程访问问题
+
         private delegate void SetTextValueCallBack(string strValue);
-        //定义接收客户端发送消息的回调
         private delegate void ReceiveMsgCallBack(string strReceive);
-        //声明回调
         private SetTextValueCallBack setCallBack;
         private ReceiveMsgCallBack receiveCallBack;
-        //定义、声明回调：给ComboBox控件添加元素
+
         private delegate void SetCmbCallBack(string strItem);
         private SetCmbCallBack setCmbCallBack;
-        //定义、声明发送文件的回调
+
         private delegate void SendFileCallBack(byte[] bf);
         private SendFileCallBack sendCallBack;
 
+        private delegate void RemoveComboCallBack(string str);
+        private RemoveComboCallBack RemoveCombo;
+
+        private delegate void ButtonEnabledCallBack(bool b);
+        private ButtonEnabledCallBack ButtonEnabled;
+
         //通信Socket
-        Socket socketSend;
+        private Socket socketSend;
         //监听SOCKET
-        Socket socketListen;
+        private Socket socketListen;
         //将远程连接的客户端的IP地址和Socket存入集合中
-        Dictionary<string, Socket> Clients = new Dictionary<string, Socket>();
+        private readonly Dictionary<string, Socket> Clients = new Dictionary<string, Socket>();
+        private readonly Dictionary<string, Thread> ReceiveThreads = new Dictionary<string, Thread>();
 
         //创建监听连接的线程
         Thread AcceptSocketThread;
@@ -66,6 +71,7 @@ namespace Server
             }
             textBox4.AppendText(@"监听成功" + Environment.NewLine);
             button2.Enabled = true;
+            button5.Enabled = true;
             //开始监听:设置最大可以同时连接多少个请求
             socketListen.Listen(MAXClients);
 
@@ -86,26 +92,36 @@ namespace Server
         ///等待客户端的连接，并且创建与之通信用的Socket
         private void StartListen(object obj)
         {
-            while (true)
+            try
             {
-                socketSend = (obj as Socket).Accept();
-                //获取远程主机的ip地址和端口号
-                string strIp = socketSend.RemoteEndPoint.ToString();
-                Clients.Add(strIp, socketSend);
-                comboBox1.Invoke(setCmbCallBack, strIp);
-                textBox4.Invoke(setCallBack, @"远程主机: " + socketSend.RemoteEndPoint + @"连接成功");
-                //创建接收客户端消息的线程
-                threadReceive = new Thread(Receive)
+                while (true)
                 {
-                    IsBackground = true
-                };
-                threadReceive.Start(socketSend);
+                    socketSend = (obj as Socket).Accept();
+                    //获取远程主机的ip地址和端口号
+                    string strIp = socketSend.RemoteEndPoint.ToString();
+                    Clients.Add(strIp, socketSend);
+                    comboBox1.Invoke(setCmbCallBack, strIp);
+                    textBox4.Invoke(setCallBack, @"远程主机: " + socketSend.RemoteEndPoint + @" 连接成功");
+                    button5.Invoke(ButtonEnabled, true);
+                    //创建接收客户端消息的线程
+                    threadReceive = new Thread(Receive)
+                    {
+                        IsBackground = true
+                    };
+                    threadReceive.Start(socketSend);
+                    ReceiveThreads.Add(strIp, threadReceive);
+                }
+            }
+            catch
+            {
+                //return;
             }
         }
 
         ///服务器端不停的接收客户端发送的消息
         private void Receive(object obj)
         {
+            var strIP = (obj as Socket).RemoteEndPoint.ToString();
             try
             {
                 Socket _socketSend = obj as Socket;
@@ -125,10 +141,16 @@ namespace Server
                     textBox4.Invoke(receiveCallBack, strReceiveMsg);
                 }
             }
-            /*catch (SocketException)
+            catch (SocketException)
             {
-                
-            }*/
+                textBox4.Invoke(receiveCallBack, @"远程主机: " + strIP + @" 断开连接");
+                comboBox1.Invoke(RemoveCombo, strIP);
+            }
+            catch (ThreadAbortException)//停止监听
+            {
+                textBox4.Invoke(receiveCallBack, @"断开与远程主机: " + strIP + @" 的连接");
+                comboBox1.Invoke(RemoveCombo, strIP);
+            }
             catch (Exception ex)
             {
                 MessageBox.Show(@"连接服务端出错:" + ex, @"出错啦", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -223,16 +245,56 @@ namespace Server
             }
         }
 
+        private void StopListen()
+        {
+            AcceptSocketThread?.Abort();
+            foreach (var Thread in ReceiveThreads)
+            {
+                Thread.Value.Abort();
+            }
+            ReceiveThreads.Clear();
+
+            socketListen?.Close();
+            foreach (var Client in Clients)
+            {
+                Client.Value.Close();
+            }
+            Clients.Clear();
+
+            textBox4.AppendText(@"停止监听" + Environment.NewLine);
+            //comboBox1.Items.Clear();
+            button1.Enabled = true;
+            button2.Enabled = false;
+            button5.Enabled = false;
+        }
         ///停止监听
         private void button2_Click(object sender, EventArgs e)
         {
-            socketListen?.Close();
-            socketSend?.Close();
-            AcceptSocketThread?.Abort();
-            threadReceive?.Abort();
-            textBox4.AppendText(@"停止监听" + Environment.NewLine);
-            button1.Enabled = true;
-            button2.Enabled = false;
+            StopListen();
+        }
+
+        private void Server_Load(object sender, EventArgs e)
+        {
+            RemoveCombo = RemoveComboStr;
+            ButtonEnabled = button5Enable;
+        }
+
+        private void RemoveComboStr(string strIP)
+        {
+            comboBox1.Items.Remove(strIP);
+            if (comboBox1.Items.Count > 0)
+            {
+                comboBox1.SelectedIndex = 0;
+            }
+            else
+            {
+                button5.Enabled = false;
+            }
+        }
+
+        private void button5Enable(bool b)
+        {
+            button5.Enabled = b;
         }
     }
 }

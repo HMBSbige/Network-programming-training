@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
@@ -27,13 +26,13 @@ namespace Client
         private SetCmbCallBack setCmbCallBack;
 
         //创建连接的Socket
-        Socket socketSend;
+        private Socket socketSend;
         //创建接收客户端发送消息的线程
-        Thread threadReceive;
+        private Thread threadReceive;
 
-        Dictionary<string, Socket> Servers = new Dictionary<string, Socket>();
+        private readonly Dictionary<string, Socket> Servers = new Dictionary<string, Socket>();
 
-        Dictionary<string, Thread> ReceiveThreads = new Dictionary<string, Thread>();
+        private readonly Dictionary<string, Thread> ReceiveThreads = new Dictionary<string, Thread>();
        
         ///连接
         private void button1_Click(object sender, EventArgs e)
@@ -59,6 +58,7 @@ namespace Client
                 comboBox1.Invoke(setCmbCallBack, strIp);
                 textBox3.Invoke(setCallBack, @"与 " + strIp + @" 连接成功");
                 button2.Enabled = true;
+                button3.Enabled = true;
 
                 //开启一个新的线程不停的接收服务器发送消息的线程
                 threadReceive = new Thread(Receive)
@@ -69,7 +69,7 @@ namespace Client
                 ReceiveThreads.Add(strIp, threadReceive);
                 threadReceive.Start(strIp);
             }
-            catch (Exception ex)
+            catch (Exception /*ex*/)
             {
                 //MessageBox.Show(@"连接服务端出错:" + ex, @"出错啦", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 socketSend?.Close();
@@ -96,7 +96,7 @@ namespace Client
                     if (buffer[0] == 0) //表示发送的是文字消息
                     {
                         string str = Encoding.UTF8.GetString(buffer, 1, r - 1);
-                        textBox3.Invoke(receiveCallBack, @"接收远程服务器:" + socket.RemoteEndPoint + @"发送的消息:" + str);
+                        textBox3.Invoke(receiveCallBack, @"接收远程服务器:" + socket.RemoteEndPoint + @"发送的消息:" + Environment.NewLine +str);
                     }
                     //表示发送的是文件
                     if (buffer[0] == 1)
@@ -119,13 +119,13 @@ namespace Client
                     }
                 }
             }
-            catch (ThreadAbortException)
+            /*catch (ThreadAbortException)
             {
                 textBox3.Invoke(setCallBack, @"已与 " + obj + @" 断开连接");
-            }
+            }*/
             catch (SocketException)
             {
-                textBox3.Invoke(setCallBack, @"与 " + obj + @" 连接丢失");
+                textBox3.Invoke(setCallBack, @"与 " + obj + @" 断开连接");
                 Disconnect(obj as String);
             }
             catch (Exception ex)
@@ -162,13 +162,13 @@ namespace Client
 
         private void Disconnect(string strIP)
         {
-            //终止线程
-            ReceiveThreads[strIP]?.Abort();
-            ReceiveThreads.Remove(strIP);
             //关闭socket
-            Servers[strIP]?.Close();
-            Servers.Remove(strIP);
-            
+            if (Servers.ContainsKey(strIP))
+            {
+                Servers[strIP]?.Close();
+                Servers.Remove(strIP);
+            }
+
             comboBox1.Items.Remove(strIP);
             if (comboBox1.Items.Count > 0)
             {
@@ -177,6 +177,15 @@ namespace Client
             else
             {
                 button2.Enabled = false;
+                button3.Enabled = false;
+            }
+
+            //终止线程
+            if (ReceiveThreads.ContainsKey(strIP))
+            {
+                var temp_thread = ReceiveThreads[strIP];
+                ReceiveThreads.Remove(strIP);
+                temp_thread?.Abort();
             }
         }
         ///断开连接
